@@ -263,12 +263,17 @@ void RunTest()
     auto kinesis_video_frame_publisher = handle->create_publisher<kinesis_video_msgs::msg::KinesisVideoFrame>(subscription_topic_name, rmw_qos_profile_default);
     kinesis_video_msgs::msg::KinesisVideoFrame message;
     message.codec_private_data = {1, 2, 3};
+
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(handle);
     for (int idx = 0; idx < publish_call_count; idx++) {
         kinesis_video_frame_publisher->publish(message);
-        rclcpp::spin_some(handle);
+        executor.spin_once(kShortCallbackWaitTime);
     }
+    executor.remove_node(handle);
     /* One of these will hold true depending on whether we're dealing with the mocked or the real
      * callbacks. */
+    rclcpp::spin_some(handle);
     ROS_POSTCALLBACK_ASSERT_TRUE(test_data.kinesis_video_frame_callback_call_count ==
                                  publish_call_count ||
                                  test_data.put_frame_call_count == publish_call_count,
@@ -297,10 +302,14 @@ void RunTest()
     image_transport::Publisher image_publisher =
             it.advertise(subscription_topic_name, kDefaultMessageQueueSize);
     sensor_msgs::msg::Image image_message;
+
+    executor.add_node(handle);
     for (int idx = 0; idx < publish_call_count; idx++) {
         image_publisher.publish(image_message);
-        rclcpp::spin_some(handle);
+        executor.spin_once(kShortCallbackWaitTime);
     }
+    executor.remove_node(handle);
+    rclcpp::spin_some(handle);
     ASSERT_EQ(test_data.kinesis_video_frame_callback_call_count, 0);
     ROS_POSTCALLBACK_ASSERT_TRUE(test_data.image_callback_call_count == publish_call_count ||
                                  test_data.put_frame_call_count == publish_call_count,
@@ -330,12 +339,16 @@ void RunTest()
             subscription_topic_name, kDefaultMessageQueueSize);
     message = kinesis_video_msgs::msg::KinesisVideoFrame();
     message.codec_private_data = {1, 2, 3};
+
+    executor.add_node(handle);
     for (int idx = 0; idx < publish_call_count; idx++) {
         kinesis_video_frame_publisher->publish(message);
-        rclcpp::spin_some(handle);
+        executor.spin_once(kShortCallbackWaitTime);
     }
+    executor.remove_node(handle);
     /* One of these will hold true depending on whether we're dealing with the mocked or the real
      * callbacks. */
+    rclcpp::spin_some(handle);
     ROS_POSTCALLBACK_ASSERT_TRUE(
             test_data.rekognition_kinesis_video_frame_callback_call_count == publish_call_count ||
             (test_data.put_frame_call_count == publish_call_count &&
@@ -348,7 +361,7 @@ void RunTest()
     /* Check that a publisher to rekognition_results_topic has been created */
     string cmd_line = "ros2 topic list -t | grep " + rekognition_results_topic;
     string expected_rostopic_list_output =
-            rekognition_results_topic + " [std_msgs/String]\n";
+            rekognition_results_topic + " [std_msgs/msg/String]\n";
     shared_ptr<FILE> pipe(popen(cmd_line.c_str(), "r"), pclose);
     array<char, 256> buffer;
     string rostopic_list_output;

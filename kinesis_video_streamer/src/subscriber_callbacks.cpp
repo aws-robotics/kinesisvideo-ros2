@@ -65,6 +65,7 @@ void KinesisVideoFrameTransportCallback(
     }
 
     Frame frame;
+    frame.trackId = DEFAULT_TRACK_ID;
     frame.size = frame_msg->frame_data.size();
     frame.frameData = reinterpret_cast<PBYTE>((void *)(frame_msg->frame_data.data()));
     frame.duration = frame_msg->duration *
@@ -107,6 +108,7 @@ void ImageTransportCallback(const KinesisStreamManagerInterface & stream_manager
                             const sensor_msgs::msg::Image::ConstSharedPtr image)
 {
     Frame frame;
+    frame.trackId = DEFAULT_TRACK_ID;
     frame.size = image->step * image->height;
     /* Overflow check (since 'size', 'step' and 'height' are all 32 bit integers). */
     if (image->step != 0 && frame.size / image->step != image->height) {

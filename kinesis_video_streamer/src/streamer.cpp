@@ -24,6 +24,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 #include <rclcpp/executor.hpp>
+#include <log4cplus/configurator.h>
 
 #ifndef RETURN_CODE_MASK
 #define RETURN_CODE_MASK (0xff) /* Process exit code is in range (0, 255) */

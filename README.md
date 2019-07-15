@@ -32,7 +32,7 @@ The source code is released under [Apache 2.0].
 **Maintainer**: AWS RoboMaker, ros-contributions@amazon.com
 
 ### Supported ROS2 Distributions
-- Crystal
+- Dashing
 
 ### Build status
 
