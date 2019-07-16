@@ -61,8 +61,11 @@ bool RosStreamSubscriptionInstaller::SetupKinesisVideoFrameTransport(
                 callback(*this->stream_manager_, descriptor.stream_name, frame);
             };
             if (auto node_handle = handle_.lock()) {
+                /* Use sensor data default QoS settings (volatile, best effort - typical for streaming) */
+                rmw_qos_profile_t kinesis_qos_profile = rmw_qos_profile_sensor_data;
+                kinesis_qos_profile.depth = descriptor.message_queue_size;
                 standard_subscribers_.push_back(
-                        node_handle->create_subscription<kinesis_video_msgs::msg::KinesisVideoFrame>(descriptor.topic_name, callback_wrapper));
+                        node_handle->create_subscription<kinesis_video_msgs::msg::KinesisVideoFrame>(descriptor.topic_name, callback_wrapper, kinesis_qos_profile));
             } else {
                 AWS_LOG_ERROR(__func__, "Cannot set up subscription - the node handle has been destroyed.");
                 return false;
@@ -93,8 +96,11 @@ bool RosStreamSubscriptionInstaller::SetupRekognitionEnabledKinesisVideoFrameTra
                         const kinesis_video_msgs::msg::KinesisVideoFrame::ConstSharedPtr frame) -> void {
                     callback(*this->stream_manager_, descriptor.stream_name, frame, publisher);
                 };
+                /* Use sensor data default QoS settings (volatile, best effort - typical for streaming) */
+                rmw_qos_profile_t kinesis_qos_profile = rmw_qos_profile_sensor_data;
+                kinesis_qos_profile.depth = descriptor.message_queue_size;
                 standard_subscribers_.push_back(node_handle->create_subscription<kinesis_video_msgs::msg::KinesisVideoFrame>(
-                        descriptor.topic_name, callback_wrapper));
+                        descriptor.topic_name, callback_wrapper, kinesis_qos_profile));
                 publishers_[descriptor.topic_name] = publisher;
             } else {
                 AWS_LOG_ERROR(__func__, "Cannot set up subscription - the node handle has been destroyed.");
