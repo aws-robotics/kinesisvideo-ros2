@@ -260,7 +260,9 @@ void RunTest()
     KinesisManagerStatus setup_result = stream_manager->KinesisVideoStreamerSetup();
     ASSERT_TRUE(KINESIS_MANAGER_STATUS_SUCCEEDED(setup_result));
     int publish_call_count = kDefaultMessageQueueSize;
-    auto kinesis_video_frame_publisher = handle->create_publisher<kinesis_video_msgs::msg::KinesisVideoFrame>(subscription_topic_name, rmw_qos_profile_default);
+    rmw_qos_profile_t rmw_qos_settings = rmw_qos_profile_default;
+    rmw_qos_settings.depth = kDefaultMessageQueueSize;
+    auto kinesis_video_frame_publisher = handle->create_publisher<kinesis_video_msgs::msg::KinesisVideoFrame>(subscription_topic_name, rmw_qos_settings);
     kinesis_video_msgs::msg::KinesisVideoFrame message;
     message.codec_private_data = {1, 2, 3};
 
