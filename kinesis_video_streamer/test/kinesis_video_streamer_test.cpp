@@ -28,27 +28,24 @@
 #include "kinesis_video_streamer_test_utils.h"
 
 /* Maximum time to wait for callbacks to become available. */
-constexpr chrono::nanoseconds kShortCallbackWaitTime = chrono::duration_cast<chrono::nanoseconds>(chrono::milliseconds(100));
+constexpr chrono::nanoseconds kShortCallbackWaitTime = chrono::duration_cast<chrono::nanoseconds>(chrono::milliseconds(500));
 constexpr chrono::nanoseconds kLongCallbackWaitTime = chrono::duration_cast<chrono::nanoseconds>(chrono::milliseconds(5000));
 /** @def ROS_POSTCALLBACK_ASSERT_TRUE
  * @brief Some tests rely on ROS callback processing which may take time. To avoid unnecessary waits
  * we define a helper macro with the following logic: If the assertion would fail, call available
- * callbacks first. If the assertion would still fail, call a single callback with a "small"
- * timeout (0.1s). If the assertion would still fail, call a single callback with a "large"
- * timeout (5s). finally, ASSERT_TRUE. This avoids unnecessary waits and ensures sufficient
- * processing time if needed.
+ * callbacks first. If the assertion would still fail, repeatedly execute a single callback, checking the condition throughout.
+ * This avoids unnecessary waits and ensures sufficient processing time if needed.
  * */
 #define ROS_POSTCALLBACK_ASSERT_TRUE(expr, handle)              \
   do {                                                          \
+      uint16_t tries = 0;                                       \
       if (!(expr)) {                                            \
         rclcpp::executors::SingleThreadedExecutor executor;     \
         executor.add_node(handle);                              \
-        executor.spin_some();                                   \
-        if (!(expr)) {                                          \
+        executor.spin_some(); \
+        while (!(expr) && tries < 100) {                         \
             executor.spin_once(kShortCallbackWaitTime);         \
-            if (!(expr)) {                                      \
-                executor.spin_once(kLongCallbackWaitTime);      \
-            }                                                   \
+            tries++;                                            \
         }                                                       \
         executor.remove_node(handle);                           \
       }                                                         \
