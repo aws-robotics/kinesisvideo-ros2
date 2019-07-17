@@ -13,7 +13,6 @@
  * permissions and limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include <aws/core/Aws.h>
@@ -32,7 +31,7 @@ using namespace Aws::Kinesis;
 class MockRosStreamSubscriptionInstaller : public RosStreamSubscriptionInstaller
 {
 public:
-  MockRosStreamSubscriptionInstaller(ros::NodeHandle & handle) : RosStreamSubscriptionInstaller(handle) {}
+  MockRosStreamSubscriptionInstaller(std::shared_ptr<rclcpp::Node> handle) : RosStreamSubscriptionInstaller(handle) {}
   
   MOCK_METHOD0(SetDefaultCallbacks, bool());
   MOCK_METHOD1(SetupImageTransport, bool(const ImageTransportCallbackFn callback));
@@ -44,12 +43,13 @@ class TestStreamerNode : public ::testing::Test
 protected:
   std::shared_ptr<MockRosStreamSubscriptionInstaller> mock_subscription_installer_;
   std::shared_ptr<StreamerNode> streamer_node_;
-  
+  std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader_;
+
   void SetUp() override
   {
-    streamer_node_ = std::make_shared<StreamerNode>("~");
-    mock_subscription_installer_ = std::make_shared<MockRosStreamSubscriptionInstaller>(*streamer_node_);
-    streamer_node_->set_subscription_installer(mock_subscription_installer_);
+    streamer_node_ = std::make_shared<StreamerNode>("streamer");
+    parameter_reader_ = std::make_shared<Aws::Client::Ros2NodeParameterReader>(streamer_node_);
+    mock_subscription_installer_ = std::make_shared<MockRosStreamSubscriptionInstaller>(streamer_node_);
   }
   
   void TearDown() override
@@ -67,8 +67,16 @@ TEST_F(TestStreamerNode, CreateNode)
 TEST_F(TestStreamerNode, InitializeStreamerNode)
 {
   EXPECT_CALL(*mock_subscription_installer_, SetDefaultCallbacks())
-    .Times(AtLeast(1)).WillRepeatedly(Return(true));
-  KinesisManagerStatus initialize_result = streamer_node_->Initialize();
+    .Times(0);
+  KinesisManagerStatus initialize_result = streamer_node_->Initialize(parameter_reader_, mock_subscription_installer_);
+  /* Region is not set */
+  EXPECT_FALSE(KINESIS_MANAGER_STATUS_SUCCEEDED(initialize_result));
+  EXPECT_EQ(initialize_result, KINESIS_MANAGER_STATUS_INVALID_INPUT);
+  /* Set the region and expect success */
+  rclcpp::Parameter region("aws_client_configuration.region", "not-empty");
+  streamer_node_->declare_parameter("aws_client_configuration.region");
+  streamer_node_->set_parameters({region});
+  initialize_result = streamer_node_->Initialize(parameter_reader_, mock_subscription_installer_);
   EXPECT_TRUE(KINESIS_MANAGER_STATUS_SUCCEEDED(initialize_result));
 }
 
@@ -76,13 +84,9 @@ int main(int argc, char ** argv)
 {
   Aws::SDKOptions options_;
   Aws::InitAPI(options_);
-    
   testing::InitGoogleMock(&argc, argv);
-
-  ros::init(argc, argv, "test_streamer_node");
-  ros::NodeHandle n("test_streamer_node");
-  n.setParam("aws_client_configuration/region", "us-west-2");
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("test_streamer_node");
   int ret = RUN_ALL_TESTS();
-
   return ret;
 }

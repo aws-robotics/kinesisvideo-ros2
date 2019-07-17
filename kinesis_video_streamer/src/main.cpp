@@ -15,18 +15,11 @@
 #include <aws/core/Aws.h>
 #include <aws/core/utils/logging/LogMacros.h>
 #include <aws_common/sdk_utils/aws_error.h>
-#include <aws_common/sdk_utils/client_configuration_provider.h>
 #include <aws_ros2_common/sdk_utils/logging/aws_ros_logger.h>
 #include <aws_ros2_common/sdk_utils/ros2_node_parameter_reader.h>
 #include <kinesis_video_streamer/ros_stream_subscription_installer.h>
 #include <kinesis_video_streamer/streamer.h>
-#include <kinesis_video_streamer/subscriber_callbacks.h>
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/executors/multi_threaded_executor.hpp>
-#include <rclcpp/executor.hpp>
-#include <log4cplus/configurator.h>
-
-#include <kinesis_video_streamer/streamer.h>
 
 #ifndef RETURN_CODE_MASK
 #define RETURN_CODE_MASK (0xff) /* Process exit code is in range (0, 255) */

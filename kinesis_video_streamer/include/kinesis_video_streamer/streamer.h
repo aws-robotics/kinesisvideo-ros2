@@ -43,8 +43,6 @@ public:
 
   void Spin();
 
-  void set_subscription_installer(std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer);
-
 private:
   std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader_;
   std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer_;

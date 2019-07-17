@@ -74,6 +74,7 @@ namespace Kinesis {
                     << initialize_video_producer_result);
             return initialize_video_producer_result;
         }
+        return KINESIS_MANAGER_STATUS_SUCCESS;
     }
 
     KinesisManagerStatus StreamerNode::InitializeStreamSubscriptions() {

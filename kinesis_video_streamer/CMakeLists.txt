@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(aws_ros2_common REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_gtest REQUIRED)
+find_package(ament_cmake_gmock REQUIRED)
 find_package(aws_common REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(kinesis_video_msgs REQUIRED)
@@ -66,6 +67,15 @@ target_include_directories(test_kinesis_video_streamer
   PRIVATE include ${KPL_INCLUDES_PATH}
   ${kinesis_manager_INCLUDE_DIRS})
 target_link_libraries(test_kinesis_video_streamer
+        ${PROJECT_NAME}_lib
+        ${LIB_DEPS})
+
+ament_add_gmock(test_streamer_node
+  test/streamer_node_test.cpp)
+target_include_directories(test_streamer_node
+  PRIVATE include ${KPL_INCLUDES_PATH}
+  ${kinesis_manager_INCLUDE_DIRS})
+target_link_libraries(test_streamer_node
         ${PROJECT_NAME}_lib
         ${LIB_DEPS})
 
