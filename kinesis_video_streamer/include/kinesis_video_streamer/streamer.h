@@ -14,6 +14,9 @@
  */
 #pragma once
 
+#include <rclcpp/rclcpp.hpp>
+#include <aws_ros2_common/sdk_utils/ros2_node_parameter_reader.h>
+
 namespace Aws {
 namespace Kinesis {
 /**
@@ -25,7 +28,29 @@ namespace Kinesis {
  * validate (or fix) the order by the receiving application.
  */
 constexpr uint32_t kDefaultNumberOfSpinnerThreads = 1;
-const char * kSpinnerThreadCountOverrideParameter = "spinner_thread_count";
+
+class StreamerNode : public rclcpp::Node
+{
+public:
+  StreamerNode(const std::string & name, const std::string & ns = std::string());
+
+  ~StreamerNode() = default;
+
+  KinesisManagerStatus Initialize(std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader,
+                                  std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer);
+
+  KinesisManagerStatus InitializeStreamSubscriptions();
+
+  void Spin();
+
+  void set_subscription_installer(std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer);
+
+private:
+  std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader_;
+  std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer_;
+  std::shared_ptr<KinesisStreamManager> stream_manager_;
+  StreamDefinitionProvider stream_definition_provider_;
+};
 
 } // namespace Kinesis
 } // namespace Aws

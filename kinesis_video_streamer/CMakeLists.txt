@@ -33,7 +33,7 @@ set(LIB_DEPS ${kinesis_manager_LIBRARIES} ${rclcpp_LIBRARIES}
 ###########
 ## Declare a C++ executable
 set(KINESIS_VIDEO_STREAMER_SRC src/ros_stream_subscription_installer.cpp
-  src/subscriber_callbacks.cpp src/streamer.cpp)
+  src/subscriber_callbacks.cpp src/streamer.cpp src/main.cpp)
 add_executable(${PROJECT_NAME} ${KINESIS_VIDEO_STREAMER_SRC})
 add_library(${PROJECT_NAME}_lib ${KINESIS_VIDEO_STREAMER_SRC})
 
