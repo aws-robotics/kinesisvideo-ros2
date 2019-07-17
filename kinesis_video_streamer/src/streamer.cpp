@@ -25,28 +25,19 @@
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 #include <rclcpp/executor.hpp>
 #include <log4cplus/configurator.h>
-
-#ifndef RETURN_CODE_MASK
-#define RETURN_CODE_MASK (0xff) /* Process exit code is in range (0, 255) */
-#endif
-
-#ifndef UNKNOWN_ERROR_KINESIS_VIDEO_EXIT_CODE
-#define UNKNOWN_ERROR_KINESIS_VIDEO_EXIT_CODE (0xf0)
-#endif
+#include <kinesis_video_streamer/streamer.h>
 
 using namespace Aws::Client;
-using namespace Aws::Kinesis;
+const char * kSpinnerThreadCountOverrideParameter = "spinner_thread_count";
 
-constexpr char kNodeName[] = "kinesis_video_streamer";
+namespace Aws {
+namespace Kinesis {
 
-class StreamerNode : public rclcpp::Node
-{
-public:
-    StreamerNode(const std::string & name,
-                 const std::string & ns = std::string()) : rclcpp::Node(name, ns) {}
+    StreamerNode::StreamerNode(const std::string & name,
+                 const std::string & ns) : rclcpp::Node(name, ns) {}
 
-    KinesisManagerStatus Initialize(std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader,
-                                    std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer)
+    KinesisManagerStatus StreamerNode::Initialize(std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader,
+                                                  std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer)
     {
         parameter_reader_ = parameter_reader;
         subscription_installer_ = subscription_installer;
@@ -83,6 +74,10 @@ public:
                     << initialize_video_producer_result);
             return initialize_video_producer_result;
         }
+        return KINESIS_MANAGER_STATUS_SUCCESS;
+    }
+
+    KinesisManagerStatus StreamerNode::InitializeStreamSubscriptions() {
         /* Set up subscriptions and get ready to start streaming */
         KinesisManagerStatus streamer_setup_result = stream_manager_->KinesisVideoStreamerSetup();
         if (KINESIS_MANAGER_STATUS_SUCCEEDED(streamer_setup_result)) {
@@ -95,7 +90,7 @@ public:
         return KINESIS_MANAGER_STATUS_SUCCESS;
     }
 
-    void Spin()
+    void StreamerNode::Spin()
     {
         uint32_t spinner_thread_count = kDefaultNumberOfSpinnerThreads;
         int spinner_thread_count_input;
@@ -108,37 +103,5 @@ public:
         spinner.spin();
     }
 
-private:
-    std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader_;
-    std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer_;
-    std::shared_ptr<KinesisStreamManager> stream_manager_;
-    StreamDefinitionProvider stream_definition_provider_;
-};
-
-int main(int argc, char * argv[])
-{
-    int return_code = UNKNOWN_ERROR_KINESIS_VIDEO_EXIT_CODE;
-
-    rclcpp::init(argc, argv);
-    auto streamer = std::make_shared<StreamerNode>(kNodeName);
-    auto parameter_reader = std::make_shared<Aws::Client::Ros2NodeParameterReader>(streamer);
-    auto subscription_installer = std::make_shared<RosStreamSubscriptionInstaller>(streamer);
-
-    Aws::Utils::Logging::InitializeAWSLogging(Aws::MakeShared<Aws::Utils::Logging::AWSROSLogger>(
-            kNodeName, Aws::Utils::Logging::LogLevel::Trace, streamer));
-    Aws::SDKOptions options;
-    Aws::InitAPI(options);
-
-    KinesisManagerStatus status = streamer->Initialize(parameter_reader, subscription_installer);
-    if (KINESIS_MANAGER_STATUS_SUCCEEDED(status)) {
-        AWS_LOG_INFO(__func__, "Starting Kinesis Video Node...");
-        streamer->Spin();
-    } else {
-        return_code = status;
-    }
-
-    AWS_LOG_INFO(__func__, "Shutting down Kinesis Video Node...");
-    Aws::Utils::Logging::ShutdownAWSLogging();
-    Aws::ShutdownAPI(options);
-    return return_code & RETURN_CODE_MASK;
-}
+}  // namespace Kinesis
+}  // namespace Aws
