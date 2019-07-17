@@ -59,11 +59,6 @@ protected:
   }
 };
 
-TEST_F(TestStreamerNode, CreateNode)
-{
-  EXPECT_TRUE(true);
-}
-
 TEST_F(TestStreamerNode, InitializeStreamerNode)
 {
   EXPECT_CALL(*mock_subscription_installer_, SetDefaultCallbacks())
@@ -78,6 +73,9 @@ TEST_F(TestStreamerNode, InitializeStreamerNode)
   streamer_node_->set_parameters({region});
   initialize_result = streamer_node_->Initialize(parameter_reader_, mock_subscription_installer_);
   EXPECT_TRUE(KINESIS_MANAGER_STATUS_SUCCEEDED(initialize_result));
+  /* InitializeStreamSubscriptions should fail as we have not set the stream count and type parameters */
+  initialize_result = streamer_node_->InitializeStreamSubscriptions();
+  EXPECT_FALSE(KINESIS_MANAGER_STATUS_SUCCEEDED(initialize_result));
 }
 
 int main(int argc, char ** argv)
@@ -86,7 +84,6 @@ int main(int argc, char ** argv)
   Aws::InitAPI(options_);
   testing::InitGoogleMock(&argc, argv);
   rclcpp::init(argc, argv);
-  auto node = rclcpp::Node::make_shared("test_streamer_node");
   int ret = RUN_ALL_TESTS();
   return ret;
 }
