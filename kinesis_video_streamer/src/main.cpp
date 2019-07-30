@@ -33,13 +33,18 @@ using namespace Aws::Client;
 using namespace Aws::Kinesis;
 
 constexpr char kNodeName[] = "kinesis_video_streamer";
+const char * kSpinnerThreadCountOverrideParameter = "spinner_thread_count";
 
 int main(int argc, char * argv[])
 {
     int return_code = UNKNOWN_ERROR_KINESIS_VIDEO_EXIT_CODE;
 
     rclcpp::init(argc, argv);
-    auto streamer = std::make_shared<StreamerNode>(kNodeName);
+
+    rclcpp::NodeOptions node_options;
+    node_options.allow_undeclared_parameters(true);
+    node_options.automatically_declare_parameters_from_overrides(true);
+    auto streamer = std::make_shared<StreamerNode>(kNodeName, std::string(), node_options);
     auto parameter_reader = std::make_shared<Aws::Client::Ros2NodeParameterReader>(streamer);
     auto subscription_installer = std::make_shared<RosStreamSubscriptionInstaller>(streamer);
 
@@ -57,7 +62,16 @@ int main(int argc, char * argv[])
     status = streamer->InitializeStreamSubscriptions();
     if (KINESIS_MANAGER_STATUS_SUCCEEDED(status)) {
         AWS_LOG_INFO(__func__, "Starting Kinesis Video Node...");
-        streamer->Spin();
+        uint32_t spinner_thread_count = kDefaultNumberOfSpinnerThreads;
+        int spinner_thread_count_input;
+        if (Aws::AwsError::AWS_ERR_OK ==
+            parameter_reader->ReadParam(ParameterPath(kSpinnerThreadCountOverrideParameter),
+                                         spinner_thread_count_input)) {
+            spinner_thread_count = static_cast<uint32_t>(spinner_thread_count_input);
+        }
+        rclcpp::executors::MultiThreadedExecutor spinner(rclcpp::executor::ExecutorArgs(), spinner_thread_count);
+        spinner.add_node(streamer);
+        spinner.spin();
     } else {
         return_code = status;
         goto shutdown_;

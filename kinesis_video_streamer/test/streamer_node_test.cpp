@@ -44,10 +44,13 @@ protected:
   std::shared_ptr<MockRosStreamSubscriptionInstaller> mock_subscription_installer_;
   std::shared_ptr<StreamerNode> streamer_node_;
   std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader_;
+  rclcpp::NodeOptions node_options_;
 
   void SetUp() override
   {
-    streamer_node_ = std::make_shared<StreamerNode>("streamer");
+    node_options_.allow_undeclared_parameters(true);
+    node_options_.automatically_declare_parameters_from_overrides(true);
+    streamer_node_ = std::make_shared<StreamerNode>("streamer", std::string(), node_options_);
     parameter_reader_ = std::make_shared<Aws::Client::Ros2NodeParameterReader>(streamer_node_);
     mock_subscription_installer_ = std::make_shared<MockRosStreamSubscriptionInstaller>(streamer_node_);
   }
@@ -69,7 +72,6 @@ TEST_F(TestStreamerNode, InitializeStreamerNode)
   EXPECT_EQ(initialize_result, KINESIS_MANAGER_STATUS_INVALID_INPUT);
   /* Set the region and expect success */
   rclcpp::Parameter region("aws_client_configuration.region", "not-empty");
-  streamer_node_->declare_parameter("aws_client_configuration.region");
   streamer_node_->set_parameters({region});
   initialize_result = streamer_node_->Initialize(parameter_reader_, mock_subscription_installer_);
   EXPECT_TRUE(KINESIS_MANAGER_STATUS_SUCCEEDED(initialize_result));
