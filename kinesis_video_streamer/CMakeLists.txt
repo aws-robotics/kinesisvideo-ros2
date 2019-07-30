@@ -57,6 +57,9 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME
   DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
 #############
 ## Tests ##
 #############
@@ -76,6 +79,15 @@ target_include_directories(test_streamer_node
   PRIVATE include ${KPL_INCLUDES_PATH}
   ${kinesis_manager_INCLUDE_DIRS})
 target_link_libraries(test_streamer_node
+        ${PROJECT_NAME}_lib
+        ${LIB_DEPS})
+
+ament_add_gmock(test_subscriber_callbacks
+  test/subscriber_callbacks_test.cpp)
+target_include_directories(test_subscriber_callbacks
+  PRIVATE include ${KPL_INCLUDES_PATH}
+  ${kinesis_manager_INCLUDE_DIRS})
+target_link_libraries(test_subscriber_callbacks
         ${PROJECT_NAME}_lib
         ${LIB_DEPS})
 

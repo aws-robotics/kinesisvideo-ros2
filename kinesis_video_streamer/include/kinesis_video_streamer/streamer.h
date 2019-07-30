@@ -32,7 +32,9 @@ constexpr uint32_t kDefaultNumberOfSpinnerThreads = 1;
 class StreamerNode : public rclcpp::Node
 {
 public:
-  StreamerNode(const std::string & name, const std::string & ns = std::string());
+  StreamerNode(const std::string & name,
+               const std::string & ns,
+               const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   ~StreamerNode() = default;
 
@@ -40,8 +42,6 @@ public:
                                   std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer);
 
   KinesisManagerStatus InitializeStreamSubscriptions();
-
-  void Spin();
 
 private:
   std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader_;

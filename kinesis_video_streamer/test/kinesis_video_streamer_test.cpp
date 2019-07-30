@@ -372,7 +372,7 @@ void RunTest()
             rostopic_list_output += buffer.data();
         }
     }
-    ASSERT_EQ(rostopic_list_output, expected_rostopic_list_output);
+    EXPECT_EQ(rostopic_list_output, expected_rostopic_list_output);
 }
 
 RosStreamSubscriptionInstaller * real_subscription_installer;

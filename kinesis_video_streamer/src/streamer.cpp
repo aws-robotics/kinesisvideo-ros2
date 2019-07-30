@@ -28,13 +28,13 @@
 #include <kinesis_video_streamer/streamer.h>
 
 using namespace Aws::Client;
-const char * kSpinnerThreadCountOverrideParameter = "spinner_thread_count";
 
 namespace Aws {
 namespace Kinesis {
 
     StreamerNode::StreamerNode(const std::string & name,
-                 const std::string & ns) : rclcpp::Node(name, ns) {}
+                               const std::string & ns,
+                               const rclcpp::NodeOptions & options) : rclcpp::Node(name, ns, options) {}
 
     KinesisManagerStatus StreamerNode::Initialize(std::shared_ptr<Aws::Client::Ros2NodeParameterReader> parameter_reader,
                                                   std::shared_ptr<RosStreamSubscriptionInstaller> subscription_installer)
@@ -88,19 +88,6 @@ namespace Kinesis {
             return streamer_setup_result;
         }
         return KINESIS_MANAGER_STATUS_SUCCESS;
-    }
-
-    void StreamerNode::Spin()
-    {
-        uint32_t spinner_thread_count = kDefaultNumberOfSpinnerThreads;
-        int spinner_thread_count_input;
-        if (Aws::AwsError::AWS_ERR_OK ==
-            parameter_reader_->ReadParam(ParameterPath(kSpinnerThreadCountOverrideParameter),
-                                         spinner_thread_count_input)) {
-            spinner_thread_count = static_cast<uint32_t>(spinner_thread_count_input);
-        }
-        rclcpp::executors::MultiThreadedExecutor spinner(rclcpp::executor::ExecutorArgs(), spinner_thread_count);
-        spinner.spin();
     }
 
 }  // namespace Kinesis
