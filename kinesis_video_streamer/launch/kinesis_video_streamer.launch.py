@@ -48,14 +48,14 @@ def generate_launch_description():
       default_value=default_config
     )
    ])
-  encoder_node = launch_ros.actions.Node(
+  streamer_node = launch_ros.actions.Node(
     package="kinesis_video_streamer",
     node_executable="kinesis_video_streamer",
     node_name=launch.substitutions.LaunchConfiguration(NODE_NAME),
     parameters=[launch.substitutions.LaunchConfiguration(CONFIG)]
   )
 
-  ld.add_action(encoder_node)
+  ld.add_action(streamer_node)
 
   return ld
 
