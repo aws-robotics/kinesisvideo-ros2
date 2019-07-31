@@ -7,7 +7,7 @@ The Kinesis Video Streams ROS package enables robots to stream video to the clou
 from a ROS “Image” topic to the cloud, enabling you to view the live video feed through the Kinesis Video Console, consume the stream via other applications, or perform intelligent analysis, face detection and face recognition
 using Amazon Rekognition.
 
-The node will transmit standard `sensor_msgs::Image` data from ROS topics to Kinesis Video streams, optionally encoding the images as h264 video frames along the way (using the included h264_video_encoder),
+The node will transmit standard `sensor_msgs::msg::Image` data from ROS topics to Kinesis Video streams, optionally encoding the images as h264 video frames along the way (using the included h264_video_encoder),
 and optionally fetches Amazon Rekognition results from corresponding Kinesis Data Streams and publishing them to local ROS topics.
 
 Note: h.264 hardware encoding is supported out of the box for OMX encoders and has been tested to
@@ -23,7 +23,7 @@ viewing, and quickly build applications that take advantage of computer vision a
 content library to optimize media workflows, enrich recommendation engines by extracting text in images, or integrate secondary authentication into existing applications to enhance end-user security. With a wide variety of use
 cases, Amazon Rekognition enables you to easily add the benefits of computer vision to your business.
 
-**Keywords**: ROS, AWS, Kinesis Video Streams
+**Keywords**: ROS, ROS2, AWS, Kinesis Video Streams
 
 ### License
 The source code is released under [Apache 2.0].
@@ -69,12 +69,13 @@ To build from source, clone the latest version from master branch and compile th
 - Clone the package into the source directory
 
         cd ~/ros-workspace/src
-        git clone https://github.com/aws-robotics/utils-common.git
-        git clone https://github.com/aws-robotics/utils-ros2.git
-        git clone https://github.com/aws-robotics/kinesisvideo-encoder-common.git
-        git clone https://github.com/aws-robotics/kinesisvideo-encoder-ros2.git
-        git clone https://github.com/aws-robotics/kinesisvideo-common.git
         git clone https://github.com/aws-robotics/kinesisvideo-ros2.git
+
+- If this package has not been released yet, also fetch unreleased dependencies:
+
+        cd ~/ros-workspace/src/kinesisvideo-ros2
+        cp .rosinstall.master .rosinstall
+        rosws update
 
 - Install dependencies
 
@@ -85,14 +86,13 @@ To build from source, clone the latest version from master branch and compile th
 
         cd ~/ros-workspace && colcon build
 
-- Configure ROS library Path
+- Configure ROS library path
 
-        source ~/ros-workspace/install/setup.bash
+        source ~/ros-workspace/install/local_setup.bash
 
-- Build and run the unit tests
+- Run the unit tests
 
-        colcon build --packages-select kinesis_video_streamer --cmake-target tests
-        colcon test --packages-select kinesis_video_streamer kinesis_manager && colcon test-result --all
+        colcon test --packages-select kinesis_video_streamer && colcon test-result --all
 
 
 ## Usage
@@ -100,13 +100,17 @@ To build from source, clone the latest version from master branch and compile th
 ### Run the node
 1. Configure the nodes (for more details, see the extended configuration section below).
   - Set up your AWS credentials and make sure you have the required IAM permissions.
-  - Encoding: review [H264 Video Encoder sample configuration file] and pay attention to subscription_topic (camera output - expects a `sensor_msgs::Image` topic) and publication_topic.
+  - Encoding: review [H264 Video Encoder sample configuration file] and pay attention to subscription_topic (camera output - expects a `sensor_msgs::msg::Image` topic) and publication_topic.
   - Streaming: review [Kinesis Video Streamer sample configuration file] - make sure subscription_topic matches the encoder's publication_topic.
 2. To use Amazon Rekognition for face detection and face recognition, follow the steps on the Rekognition guide (skip steps 8 & 9 as they are already performed by this node): https://docs.aws.amazon.com/rekognition/latest/dg/recognize-faces-in-a-video-stream.html
 3. Run:
-  - `ros2 run kinesis_video_streamer kinesis_video_streamer __params:=sample_config.yaml`
-4. Example: running on a Raspberry Pi (WIP)
-
+  - `ros2 launch kinesis_video_streamer kinesis_video_streamer.launch.py`
+4. Example: running on a Raspberry Pi
+  - `ros2 run `[`raspicam2`]` raspicam2_node __params:=`ros2 pkg prefix raspicam2`/share/raspicam2/cfg/params.yaml`
+  - `ros2 launch h264_video_encoder h264_video_encoder_launch.py `
+  - `ros2 launch kinesis_video_streamer kinesis_video_streamer.launch.py`
+  - Log into your AWS Console to see the availabe Kinesis Video stream.
+    - For other platforms, replace step 1 with an equivalent command to launch your camera node. Reconfigure the topic names accordingly.
 
 ## Configuration File and Parameters
 Applies to the `kinesis_video_streamer` node. For configuring the encoder node, please see the README for the [H264 Video Encoder node]. An example configuration file called `sample_config.yaml` is provided. When the parameters are absent in
@@ -117,12 +121,12 @@ The parameters below apply to the node as a whole and are not specific to any on
 
 | Parameter Name | Description | Type |
 | -------------- | -----------------------------------------------------------| ------------- |
-| aws_client_configuration/region | The AWS region which the video should be streamed to. | *string* |
-| kinesis_video/stream_count | The number of streams you wish to load and transmit. Each stream should have its corresponding parameter set as described below. | *int* |
-| kinesis_video/log4cplus_config | (optional) Config file path for the log4cplus logger, which is used by the Kinesis Video Producer SDK. | *string* |
+| aws_client_configuration.region | The AWS region which the video should be streamed to. | *string* |
+| kinesis_video.stream_count | The number of streams you wish to load and transmit. Each stream should have its corresponding parameter set as described below. | *int* |
+| kinesis_video.log4cplus_config | (optional) Config file path for the log4cplus logger, which is used by the Kinesis Video Producer SDK. | *string* |
 
 ### Stream-specific configuration parameters
-The parameters below should be provided per stream, with the prefix being `kinesis_video/stream<id>/<parameter name>`.
+The parameters below should be provided per stream, with the parameter namespace being `kinesis_video.stream<id>.<parameter name>`.
 
 | Parameter Name | Description | Type |
 | ------------- | -----------------------------------------------------------| ------------- |
@@ -134,21 +138,6 @@ The parameters below should be provided per stream, with the prefix being `kines
 | rekognition_topic_name | (optional - required if topic type == 3) The ROS topic to which the analysis results should be published. | *string* |
 
 Additional stream-specific parameters such as frame_rate can be provided to further customize the stream definition structure. See [Kinesis header stream definition] for the remaining parameters and their default values.
-
-
-## Performance and Benchmark Results
-We evaluated the performance of this node by runnning the following scenario on a Raspberry Pi 3 Model B Plus connected to a Raspberry Pi camera module. The camera output was setup at a rate of 30 fps and resolution of 410x308 pixels, and encoded at a bitrate of 2mbps.
-- Launch a baseline graph containing the talker and listener nodes from the [roscpp_tutorials package](https://wiki.ros.org/roscpp_tutorials), plus two additional nodes that collect CPU and memory usage statistics. Allow the nodes to run for 60 seconds.
-- Following the instructions in the "Quick Start" section above, launch a `raspicam_node` node to get the images from the camera module, then launch a `h264_video_encoder` node to encode the images, and finally launch a `kinesis_video_streamer` node to send the image frames to the Amazon Kinesis Video Streams service. Allow the nodes to run for 180 seconds.
-- Terminate the `raspicam_node`, `h264_video_encoder` and `kinesis_video_streamer` nodes, and allow the remaining nodes to run for 60 seconds.
-
-The following graph shows the CPU usage during that scenario. After we start launching the kinesis nodes at second 60, the 1 minute average CPU usage increases from an initial 5.5% for the baseline graph up to a peak of 20.25%, and stabilizes around 15% until we stop the nodes around second 260. 
-
-![cpu usage](wiki/images/cpu.svg)
-
-The following graph shows the memory usage during that scenario. Free memory also accounts for additional memory available through a swap partition. After launching the kinesis nodes around second 60, the memory increases from the 292 MB for the baseline graph up to a peak of 392 MB (+34.25%), and stabilizes around 374 MB (+28.08% wrt. baseline graph). The memory usage goes down to 318 MB after stopping the kinesis nodes. 
-
-![memory usage](wiki/images/memory.svg) 
 
 
 ## Node Details
@@ -169,7 +158,7 @@ Please contact the team directly if you would like to request a feature.
 Please report bugs in [Issue Tracker].
 
 
-[`raspicam_node`]: https://github.com/UbiquityRobotics/raspicam_node
+[`raspicam2`]: https://github.com/christianrauch/raspicam2_node
 [Amazon Rekognition]: https://docs.aws.amazon.com/rekognition/latest/dg/streaming-video.html
 [Amazon Web Services (AWS)]: https://aws.amazon.com/
 [Apache 2.0]: https://aws.amazon.com/apache-2-0/
