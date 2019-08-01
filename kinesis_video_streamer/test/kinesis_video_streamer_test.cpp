@@ -43,6 +43,7 @@ constexpr chrono::nanoseconds kLongCallbackWaitTime = chrono::duration_cast<chro
       if (!(expr)) {                                            \
         rclcpp::executors::SingleThreadedExecutor executor;     \
         executor.add_node(handle);                              \
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); \
         executor.spin_some();                                   \
         if (!(expr)) {                                          \
             executor.spin_once(kShortCallbackWaitTime);         \
@@ -259,7 +260,7 @@ void RunTest()
     test_data.get_stream_definition_return_value = (StreamDefinition *)stream_definition.release();
     KinesisManagerStatus setup_result = stream_manager->KinesisVideoStreamerSetup();
     ASSERT_TRUE(KINESIS_MANAGER_STATUS_SUCCEEDED(setup_result));
-    int publish_call_count = kDefaultMessageQueueSize;
+    int publish_call_count = kDefaultMessageQueueSize / 2;
     rmw_qos_profile_t rmw_qos_settings = rmw_qos_profile_default;
     rmw_qos_settings.depth = kDefaultMessageQueueSize;
     auto kinesis_video_frame_publisher = handle->create_publisher<kinesis_video_msgs::msg::KinesisVideoFrame>(subscription_topic_name, rmw_qos_settings);
