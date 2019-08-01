@@ -362,18 +362,20 @@ void RunTest()
         ASSERT_EQ(test_data.process_codec_private_data_call_count, publish_call_count);
     }
     /* Check that a publisher to rekognition_results_topic has been created */
-    string cmd_line = "ros2 topic list -t | grep " + rekognition_results_topic;
-    string expected_rostopic_list_output =
-            rekognition_results_topic + " [std_msgs/msg/String]\n";
-    shared_ptr<FILE> pipe(popen(cmd_line.c_str(), "r"), pclose);
-    array<char, 256> buffer;
-    string rostopic_list_output;
-    while (!feof(pipe.get())) {
-        if (nullptr != fgets(buffer.data(), buffer.size(), pipe.get())) {
-            rostopic_list_output += buffer.data();
-        }
+    bool found_rekognition_topic = false;
+    auto topics = handle->get_topic_names_and_types();
+    for (auto const & topic : topics) {
+       if (topic.first != rekognition_results_topic) {
+           continue;
+       }
+       for (auto const & type : topic.second) {
+           if (type == "std_msgs/msg/String") {
+               found_rekognition_topic = true;
+               break;
+           }
+       }
     }
-    EXPECT_EQ(rostopic_list_output, expected_rostopic_list_output);
+    ASSERT_TRUE(found_rekognition_topic);
 }
 
 RosStreamSubscriptionInstaller * real_subscription_installer;
