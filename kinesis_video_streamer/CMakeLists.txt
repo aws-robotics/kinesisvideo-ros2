@@ -91,15 +91,4 @@ target_link_libraries(test_subscriber_callbacks
         ${PROJECT_NAME}_lib
         ${LIB_DEPS})
 
-#ament_export_dependencies(kinesis_manager)
-#ament_export_dependencies(rclcpp)
-#ament_export_dependencies(aws_ros2_common)
-#ament_export_dependencies(ament_cmake)
-#ament_export_dependencies(aws_common)
-#ament_export_dependencies(image_transport)
-#ament_export_dependencies(kinesis_video_msgs)
-#ament_export_dependencies(rmw_implementation)
-#ament_export_include_directories(include)
-#ament_export_libraries(${PROJECT_NAME}_lib ${LIB_DEPS})
-
 ament_package()
