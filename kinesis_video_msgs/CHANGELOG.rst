@@ -2,8 +2,8 @@
 Changelog for package kinesis_video_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2019-09-06)
+------------------
 * Delete CHANGELOG.rst
 * Add changelogs
 * Bumping version to 3.0.0
