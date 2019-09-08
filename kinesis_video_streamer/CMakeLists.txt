@@ -10,8 +10,6 @@ find_package(kinesis_manager REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(aws_ros2_common REQUIRED)
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_gtest REQUIRED)
-find_package(ament_cmake_gmock REQUIRED)
 find_package(aws_common REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(kinesis_video_msgs REQUIRED)
@@ -64,31 +62,36 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 ## Tests ##
 #############
 
-ament_add_gtest(test_kinesis_video_streamer
-  test/kinesis_video_streamer_test.cpp)
-target_include_directories(test_kinesis_video_streamer
-  PRIVATE include ${KPL_INCLUDES_PATH}
-  ${kinesis_manager_INCLUDE_DIRS})
-target_link_libraries(test_kinesis_video_streamer
-        ${PROJECT_NAME}_lib
-        ${LIB_DEPS})
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_gmock REQUIRED)
+  
+  ament_add_gtest(test_kinesis_video_streamer
+    test/kinesis_video_streamer_test.cpp)
+  target_include_directories(test_kinesis_video_streamer
+    PRIVATE include ${KPL_INCLUDES_PATH}
+    ${kinesis_manager_INCLUDE_DIRS})
+  target_link_libraries(test_kinesis_video_streamer
+          ${PROJECT_NAME}_lib
+          ${LIB_DEPS})
 
-ament_add_gmock(test_streamer_node
-  test/streamer_node_test.cpp)
-target_include_directories(test_streamer_node
-  PRIVATE include ${KPL_INCLUDES_PATH}
-  ${kinesis_manager_INCLUDE_DIRS})
-target_link_libraries(test_streamer_node
-        ${PROJECT_NAME}_lib
-        ${LIB_DEPS})
+  ament_add_gmock(test_streamer_node
+    test/streamer_node_test.cpp)
+  target_include_directories(test_streamer_node
+    PRIVATE include ${KPL_INCLUDES_PATH}
+    ${kinesis_manager_INCLUDE_DIRS})
+  target_link_libraries(test_streamer_node
+          ${PROJECT_NAME}_lib
+          ${LIB_DEPS})
 
-ament_add_gmock(test_subscriber_callbacks
-  test/subscriber_callbacks_test.cpp)
-target_include_directories(test_subscriber_callbacks
-  PRIVATE include ${KPL_INCLUDES_PATH}
-  ${kinesis_manager_INCLUDE_DIRS})
-target_link_libraries(test_subscriber_callbacks
-        ${PROJECT_NAME}_lib
-        ${LIB_DEPS})
+  ament_add_gmock(test_subscriber_callbacks
+    test/subscriber_callbacks_test.cpp)
+  target_include_directories(test_subscriber_callbacks
+    PRIVATE include ${KPL_INCLUDES_PATH}
+    ${kinesis_manager_INCLUDE_DIRS})
+  target_link_libraries(test_subscriber_callbacks
+          ${PROJECT_NAME}_lib
+          ${LIB_DEPS})
+endif()
 
 ament_package()
