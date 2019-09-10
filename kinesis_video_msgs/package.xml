@@ -4,8 +4,8 @@
   <version>3.0.0</version>
   <description>Messages for transmitting video frames to Kinesis Video Streams.</description>
 
-  <author email="aws-b9-platform@amazon.com">AWS B9 Team</author>
-  <maintainer email="aws-b9-platform@amazon.com">AWS B9 Team</maintainer>
+  <author email="ros-contributions@amazon.com">AWS RoboMaker</author>
+  <maintainer email="ros-contributions@amazon.com">AWS RoboMaker</maintainer>
 
   <license>Apache 2.0</license>
 
