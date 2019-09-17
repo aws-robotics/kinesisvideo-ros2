@@ -60,16 +60,17 @@ For [Amazon Rekognition] integration, the user will also need permissions for th
 - `kinesis:GetRecords`
 
 ### Building from Source
-Create a ROS workspace and a source directory
+
+To build from source you'll need to create a new workspace, clone and checkout the latest release branch of this repository, install all the dependencies, and compile. If you need the latest development features you can clone from the `master` branch instead of the latest release branch. While we guarantee the release branches are stable, __the `master` should be considered to have an unstable build__ due to ongoing development. 
+
+- Create a ROS workspace and a source directory
 
     mkdir -p ~/ros-workspace/src
-
-To build from source, clone the latest version from master branch and compile the package
 
 - Clone the package into the source directory
 
         cd ~/ros-workspace/src
-        git clone https://github.com/aws-robotics/kinesisvideo-ros2.git
+        git clone https://github.com/aws-robotics/kinesisvideo-ros2.git -b release-latest
 
 - If this package has not been released yet, also fetch unreleased dependencies:
 
