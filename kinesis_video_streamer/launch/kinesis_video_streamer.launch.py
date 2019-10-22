@@ -27,22 +27,22 @@ REKOGNITION_DATA_STREAM = "rekognition_data_stream"
 
 MAX_STRING_LEN = 128
 
-def get_logger_config_path(config_yaml):
-  logger_config_path = os.path.join(get_package_share_directory('kinesis_video_streamer'),
-    'config', 'kvs_log_configuration')
+def get_logger_config_path(user_logger_config_path):
+  logger_config_path = os.path.join(get_package_share_directory('kinesis_video_streamer'), 'config', 'kvs_log_configuration')
   fallback_path = '/tmp/kvs_log_configuration'
 
-  if fallback_path == config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['log4cplus_config']:
-    if len(logger_config_path) <= MAX_STRING_LEN:
-      # Override /tmp/... to the actual path
-      return logger_config_path
-    else:
-      # Path too long and no alternative was specified - copy to /tmp/ fallback path (platform-dependent)
-      shutil.copy(logger_config_path, fallback_path)
-      return fallback_path
-  else:
+  if user_logger_config_path != fallback_path:
     # The config file was modified by the user - do not override
     return None
+
+  if len(logger_config_path) <= MAX_STRING_LEN:
+    # Override /tmp/... to the actual path
+    return logger_config_path
+
+  # Path too long and no alternative was specified - copy to /tmp/ fallback path (platform-dependent)
+  shutil.copy(logger_config_path, fallback_path)
+
+  return fallback_path
 
 def generate_launch_description():
   # Default to included config file
@@ -54,6 +54,7 @@ def generate_launch_description():
   default_aws_region = default_config_yaml['kinesis_video_streamer']['ros__parameters']['aws_client_configuration']['region']
   default_stream_name = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['stream0']['stream_name']
   default_rekognition = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['stream0']['rekognition_data_stream']
+  default_log4cplus_config = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['log4cplus_config']
 
   ld = launch.LaunchDescription([
     launch.actions.DeclareLaunchArgument(
@@ -78,27 +79,19 @@ def generate_launch_description():
     )
   ])
 
-  node_parameters = [launch.substitutions.LaunchConfiguration(CONFIG)]
-  node_parameters.append({
+  node_parameters = [launch.substitutions.LaunchConfiguration(CONFIG), {
     'aws_client_configuration': {
       'region': launch.substitutions.LaunchConfiguration(AWS_REGION)
-    }
-  })
-  node_parameters.append({
+    },
     'kinesis_video': {
       'stream0': {
-        'stream_name': launch.substitutions.LaunchConfiguration(STREAM_NAME)
-      }
-    }
-  })
-  node_parameters.append({
-    'kinesis_video': {
-      'stream0': {
+        'stream_name': launch.substitutions.LaunchConfiguration(STREAM_NAME),
         'rekognition_data_stream': launch.substitutions.LaunchConfiguration(REKOGNITION_DATA_STREAM)
       }
     }
-  })
-  logger_config_path = get_logger_config_path(default_config_yaml)
+  }]
+
+  logger_config_path = get_logger_config_path(default_log4cplus_config)
   if logger_config_path is not None:
     node_parameters.append({
       'kinesis_video': {
