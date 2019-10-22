@@ -11,12 +11,18 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 import os
-
-from ament_index_python.packages import get_package_share_directory
-import launch
-import launch_ros.actions
 import yaml
 import shutil
+
+from ament_index_python.packages import get_package_share_directory
+
+import launch
+from launch.substitutions import PythonExpression
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
+
+import launch_ros.actions
+
 
 # Argument names
 NODE_NAME = "node_name"
@@ -53,7 +59,6 @@ def generate_launch_description():
 
   default_aws_region = default_config_yaml['kinesis_video_streamer']['ros__parameters']['aws_client_configuration']['region']
   default_stream_name = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['stream0']['stream_name']
-  default_rekognition = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['stream0']['rekognition_data_stream']
   default_log4cplus_config = default_config_yaml['kinesis_video_streamer']['ros__parameters']['kinesis_video']['log4cplus_config']
 
   ld = launch.LaunchDescription([
@@ -75,19 +80,21 @@ def generate_launch_description():
     ),
     launch.actions.DeclareLaunchArgument(
       REKOGNITION_DATA_STREAM,
-      default_value=default_rekognition
+      default_value=''
     )
   ])
 
-  node_parameters = [launch.substitutions.LaunchConfiguration(CONFIG), {
+  node_parameters = [LaunchConfiguration(CONFIG), {
     'aws_client_configuration': {
-      'region': launch.substitutions.LaunchConfiguration(AWS_REGION)
+      'region': LaunchConfiguration(AWS_REGION)
     },
     'kinesis_video': {
-      'stream0': {
-        'stream_name': launch.substitutions.LaunchConfiguration(STREAM_NAME),
-        'rekognition_data_stream': launch.substitutions.LaunchConfiguration(REKOGNITION_DATA_STREAM)
-      }
+      'stream0': PythonExpression([
+        "{ 'stream_name': '", LaunchConfiguration(STREAM_NAME), "',"
+        " 'rekognition_data_stream': '", LaunchConfiguration(REKOGNITION_DATA_STREAM), "' }",
+        " if '", LaunchConfiguration(REKOGNITION_DATA_STREAM), "' else ",
+        "{ 'stream_name': '", LaunchConfiguration(STREAM_NAME), "' }"
+      ])
     }
   }]
 
@@ -102,7 +109,7 @@ def generate_launch_description():
   streamer_node = launch_ros.actions.Node(
     package="kinesis_video_streamer",
     node_executable="kinesis_video_streamer",
-    node_name=launch.substitutions.LaunchConfiguration(NODE_NAME),
+    node_name=LaunchConfiguration(NODE_NAME),
     parameters=node_parameters
   )
 
