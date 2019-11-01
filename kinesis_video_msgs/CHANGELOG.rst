@@ -2,8 +2,8 @@
 Changelog for package kinesis_video_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2019-11-01)
+------------------
 * Bump version to 3.1.0
 * Fix author, maintainer information for kinesis_video_msgs
 * Contributors: AAlon, ryanewel
