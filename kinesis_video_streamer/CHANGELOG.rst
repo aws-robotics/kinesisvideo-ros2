@@ -2,6 +2,16 @@
 Changelog for package kinesis_video_streamer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump version number to 3.1.0
+* Add ability to set AWS Region and stream name via launch parameters (`#20 <https://github.com/aws-robotics/kinesisvideo-ros2/issues/20>`_)
+  * add ability to override aws_region and stream_name via launch parameters
+  * add ability to override rekognition_data_stream via launch parameters
+  * address feedback in the pull request
+  * conditionally override rekognition_data_stream, so that sample_config.yaml does not need to be modified
+* Contributors: M. M, ryanewel
+
 3.0.0 (2019-09-06)
 ------------------
 * Delete CHANGELOG.rst

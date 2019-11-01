@@ -2,6 +2,12 @@
 Changelog for package kinesis_video_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump version to 3.1.0
+* Fix author, maintainer information for kinesis_video_msgs
+* Contributors: AAlon, ryanewel
+
 3.0.0 (2019-09-06)
 ------------------
 * Delete CHANGELOG.rst
