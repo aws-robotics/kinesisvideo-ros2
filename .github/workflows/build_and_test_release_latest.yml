@@ -16,16 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distro: [kinetic, melodic, dashing]
+        ros_distro: [dashing]
         include:
-        - ros_distro: kinetic
-          ubuntu_distro: xenial
-          ros_version: 1
-          extra_cmake_args: --cmake-target tests
-        - ros_distro: melodic
-          ubuntu_distro: bionic
-          ros_version: 1
-          extra_cmake_args: --cmake-target tests
         - ros_distro: dashing
           ubuntu_distro: bionic
           ros_version: 2
