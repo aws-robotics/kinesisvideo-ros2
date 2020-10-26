@@ -35,6 +35,10 @@ The source code is released under [Apache 2.0].
 - Dashing
 
 ### Build status
+GitHub Action Status
+* master: ![Build & Test](https://github.com/aws-robotics/kinesisvideo-ros2/workflows/Build%20&%20Test/badge.svg?branch=master&event=schedule)
+* release-latest: ![Build & Test release-latest](https://github.com/aws-robotics/kinesisvideo-ros2//workflows/Build%20&%20Test%20release-latest/badge.svg?event=schedule)
+
 
 * Travis CI:
     * "master" branch [![Build Status](https://travis-ci.org/aws-robotics/kinesisvideo-ros2.svg?branch=master)](https://travis-ci.org/aws-robotics/kinesisvideo-ros2/branches)
