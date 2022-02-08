@@ -29,20 +29,11 @@ The source code is released under [Apache 2.0].
 
 **Author**: AWS RoboMaker<br/>
 **Affiliation**: [Amazon Web Services (AWS)]<br/>
-**Maintainer**: AWS RoboMaker, ros-contributions@amazon.com
+
+RoboMaker cloud extensions rely on third-party software licensed under open-source licenses and are provided for demonstration purposes only. Incorporation or use of RoboMaker cloud extensions in connection with your production workloads or commercial product(s) or devices may affect your legal rights or obligations under the applicable open-source licenses. License information for this repository can be found [here](https://github.com/aws-robotics/kinesisvideo-ros2/blob/master/LICENSE). AWS does not provide support for this cloud extension. You are solely responsible for how you configure, deploy, and maintain this cloud extension in your workloads or commercial product(s) or devices.
 
 ### Supported ROS2 Distributions
 - Dashing
-
-### Build status
-* GitHub Action Status
-     * master: [![Build & Test](https://github.com/aws-robotics/kinesisvideo-ros2/workflows/Build%20&%20Test/badge.svg?branch=master&event=schedule)](https://github.com/aws-robotics/kinesisvideo-ros2/actions?query=workflow%3A"Build+%26+Test"+event%3Aschedule)
-     * release-latest: [![Build & Test release-latest](https://github.com/aws-robotics/kinesisvideo-ros2/workflows/Build%20&%20Test%20release-latest/badge.svg?branch=master&event=schedule)](https://github.com/aws-robotics/kinesisvideo-ros2/actions?query=workflow%3A"Build+%26+Test+release-latest"+event%3Aschedule)
-
-
-
- * ROS build farm:
-   * ROS Dashing @ u18.04 Bionic [![Build Status](http://build.ros2.org/job/Dbin_uB64__kinesis_video_streamer__ubuntu_bionic_amd64__binary/badge/icon)](http://build.ros2.org/job/Dbin_uB64__kinesis_video_streamer__ubuntu_bionic_amd64__binary)
 
 ## Installation
 
@@ -60,12 +51,6 @@ For [Amazon Rekognition] integration, the user will also need permissions for th
 - `kinesis:ListShards`
 - `kinesis:GetShardIterator`
 - `kinesis:GetRecords`
-
-### Binaries
-On Ubuntu you can install the latest version of this package using the following command
-
-        sudo apt-get update
-        sudo apt-get install -y ros-$ROS_DISTRO-kinesis-video-streamer
 
 ### Building from Source
 
@@ -159,13 +144,6 @@ The number of subscriptions is configurable and is determined by the `kinesis_vi
 | Topic Name | Message Type | Description |
 | ---------- | ------------ | ----------- |
 | *Configurable* | *Configurable* (kinesis_video_msgs/KinesisVideoFrame or sensor_msgs/Image) | The node will subscribe to a topic of a given name. The data is expected to be either images (such as from a camera node publishing Image messages), or video frames (such as from an encoder node publishing KinesisVideoFrame messages). |
-
-
-## Bugs & Feature Requests
-Please contact the team directly if you would like to request a feature.
-
-Please report bugs in [Issue Tracker].
-
 
 [`raspicam2`]: https://github.com/christianrauch/raspicam2_node
 [Amazon Rekognition]: https://docs.aws.amazon.com/rekognition/latest/dg/streaming-video.html
